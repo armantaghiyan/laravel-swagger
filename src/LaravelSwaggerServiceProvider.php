@@ -41,6 +41,7 @@ class LaravelSwaggerServiceProvider extends ServiceProvider {
 			$this->commands([
 				Console\SwaggerGenerate::class,
 				Console\PublishCommand::class,
+				Console\SwaggerWatch::class,
 			]);
 		}
 	}
