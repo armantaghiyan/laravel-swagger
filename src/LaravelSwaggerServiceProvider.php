@@ -40,6 +40,7 @@ class LaravelSwaggerServiceProvider extends ServiceProvider {
 		if ($this->app->runningInConsole()) {
 			$this->commands([
 				Console\SwaggerGenerate::class,
+				Console\PublishCommand::class,
 			]);
 		}
 	}
@@ -77,6 +78,10 @@ class LaravelSwaggerServiceProvider extends ServiceProvider {
 			$this->publishes([
 				__DIR__ . '/../config/swagger.php' => config_path('swagger.php'),
 			], 'swagger-config');
+
+			$this->publishes([
+				__DIR__ . '/../public' => public_path('vendor/swagger'),
+			], ['swagger-assets', 'laravel-assets']);
 		}
 	}
 }
