@@ -7,7 +7,7 @@ use Illuminate\Contracts\View\View;
 class SwaggerController {
 
 	public function index(): View {
-		$json = file_get_contents(storage_path('docs/swagger.json'));
+		$json = file_get_contents(config('swagger.save_path') . '/swagger.json');
 
 		return view('swagger::layout', compact('json'));
 	}

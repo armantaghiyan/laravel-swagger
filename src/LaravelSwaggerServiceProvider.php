@@ -54,7 +54,7 @@ class LaravelSwaggerServiceProvider extends ServiceProvider {
 	protected function registerRoutes(): void {
 		Route::group([
 			'domain' => config('swagger.domain'),
-			'prefix' => config('swagger.path'),
+			'prefix' => config('swagger.prefix'),
 		], function () {
 			$this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
 		});

@@ -11,12 +11,20 @@ class SwaggerWatch extends Command {
 	protected $signature = 'swagger:watch';
 	protected $description = 'Watch controller file';
 
-	private $lastChecksum = null;
+	private string|null $lastChecksum = null;
 
 	public function handle() {
+		$paths = config('swagger.watch', []);
+
+		if (empty($paths)) {
+			$this->error('No paths defined in config file');
+			return;
+		}
+
 		$this->runSwaggerGenerator();
+
 		while (true) {
-			$currentChecksum = $this->getControllersChecksum();
+			$currentChecksum = $this->getControllersChecksum($paths);
 
 			if ($this->lastChecksum !== null && $this->lastChecksum !== $currentChecksum) {
 				$this->runSwaggerGenerator();
@@ -27,11 +35,15 @@ class SwaggerWatch extends Command {
 		}
 	}
 
-	private function getControllersChecksum() {
+	private function getControllersChecksum(array $paths): string {
 		$finder = new Finder();
 		$checksums = [];
 
-		$finder->files()->in(app_path('Http/Controllers'))->name('*.php');
+		$finder->files()
+			->in($paths)
+			->name('*.php')
+			->ignoreDotFiles(true)
+			->ignoreVCS(true);
 
 		foreach ($finder as $file) {
 			$checksums[] = md5_file($file->getRealPath());
@@ -40,7 +52,7 @@ class SwaggerWatch extends Command {
 		return md5(implode('', $checksums));
 	}
 
-	private function runSwaggerGenerator() {
+	private function runSwaggerGenerator(): void {
 		$command = ['php', 'artisan', 'swagger:generate'];
 
 		$process = new Process($command);
