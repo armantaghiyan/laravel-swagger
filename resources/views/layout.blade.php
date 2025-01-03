@@ -15,11 +15,40 @@
 <script src="{{ asset('vendor/swagger/app.js') }}"></script>
 
 <script>
-    window.onload = () => {
+    let currentSpec = null;
+
+    function initSwagger(spec) {
         window.ui = SwaggerUIBundle({
             dom_id: '#swagger-ui',
-            spec: JSON.parse(@json($json)),
+            spec: spec,
+            deepLinking: true,
+            filter: true,
+            onComplete: () => {
+                console.log('onComplete')
+            },
+            docExpansion: 'list',
         });
+        currentSpec = spec;
+    }
+
+    function updateSwaggerIfChanged() {
+        fetch('/swagger/data')
+            .then(response => response.json())
+            .then(newSpec => {
+                if (JSON.stringify(newSpec) !== JSON.stringify(currentSpec)) {
+                    window.ui.specActions.updateSpec(JSON.stringify(newSpec));
+                    currentSpec = newSpec;
+                }
+            });
+    }
+
+    window.onload = () => {
+        fetch('/swagger/data')
+            .then(response => response.json())
+            .then(spec => {
+                initSwagger(spec);
+                setInterval(updateSwaggerIfChanged, 5000);
+            });
     };
 </script>
 
