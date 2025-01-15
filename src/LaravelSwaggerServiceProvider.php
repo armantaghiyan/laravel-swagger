@@ -39,9 +39,7 @@ class LaravelSwaggerServiceProvider extends ServiceProvider {
 	protected function registerCommands(): void {
 		if ($this->app->runningInConsole()) {
 			$this->commands([
-				Console\SwaggerGenerate::class,
 				Console\PublishCommand::class,
-				Console\SwaggerWatch::class,
 			]);
 		}
 	}

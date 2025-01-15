@@ -2,18 +2,14 @@
 
 namespace Arman\LaravelSwagger\Http\Controllers;
 
+use Arman\LaravelSwagger\Export\SwaggerExport;
 use Illuminate\Contracts\View\View;
 
 class SwaggerController {
 
 	public function index(): View {
+		$swagger = (new SwaggerExport())->toArray();
 
-		return view('swagger::layout');
-	}
-
-	public function getSwaggerData() {
-		$json = file_get_contents(config('swagger.save_path') . '/swagger.json');
-
-		return json_decode($json, true);
+		return view('swagger::layout', compact('swagger'));
 	}
 }

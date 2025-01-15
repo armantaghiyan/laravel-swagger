@@ -1,13 +1,35 @@
 <?php
 
-
 return [
+
+	/*
+	|--------------------------------------------------------------------------
+	| Laravel Swagger Title
+	|--------------------------------------------------------------------------
+	|
+	| The title of the Swagger documentation. This will be displayed on the
+	| Swagger documentation page.
+	|
+	*/
+	'title' => 'Laravel Swagger',
+
+	/*
+	|--------------------------------------------------------------------------
+	| Laravel Swagger Version
+	|--------------------------------------------------------------------------
+	|
+	| The version of the Swagger documentation. This represents the version of
+	| your API and will be displayed in the Swagger docs.
+	|
+	*/
+	'version' => '1.0.0',
+
 	/*
 	|--------------------------------------------------------------------------
 	| Laravel Swagger Domain
 	|--------------------------------------------------------------------------
 	|
-	| Subdomain where swagger will be accessible. If null, it uses the same
+	| Subdomain where Swagger will be accessible. If null, it uses the same
 	| domain as the application.
 	|
 	*/
@@ -18,33 +40,9 @@ return [
 	| Laravel Swagger Prefix Url
 	|--------------------------------------------------------------------------
 	|
-	| URI path prefix for swagger access. Customizable but won't affect
-	| internal API URLs.
+	| URI path prefix for accessing Swagger. This is customizable but won't
+	| affect internal API URLs.
 	|
 	*/
 	'prefix' => env('SWAGGER_PREFIX', 'swagger'),
-
-	/*
-	|--------------------------------------------------------------------------
-	| Laravel Swagger Save Path
-	|--------------------------------------------------------------------------
-	|
-	| Directory path where swagger documentation files will be saved.
-	|
-	*/
-	'save_path' => env('SWAGGER_SAVE_PATH', storage_path('docs')),
-
-	/*
-	|--------------------------------------------------------------------------
-	| Paths to Watch
-	|--------------------------------------------------------------------------
-	|
-	| List of directories and files to monitor for changes when using swagger:watch
-	| command. Changes in these paths will trigger automatic swagger regeneration.
-	|
-	*/
-	'watch' => [
-		'app/Http/Controllers',
-		'routes',
-	],
 ];
