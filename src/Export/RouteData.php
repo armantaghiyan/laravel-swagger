@@ -2,9 +2,13 @@
 
 namespace Arman\LaravelSwagger\Export;
 
+use Arman\LaravelSwagger\Attribute\ApiParam;
+use Arman\LaravelSwagger\Attribute\ApiSummary;
+use Arman\LaravelSwagger\Attribute\Section;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Str;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionMethod;
 
 
@@ -16,23 +20,28 @@ class RouteData {
 	private string $uri;
 	private string $method;
 	private string $controller;
+	private mixed $controllerInstance;
 	private string|null $controllerMethod;
 	private array $parameters = [];
 	private string $summary = '';
 
 	/**
-	 * @throws \ReflectionException
+	 * @throws ReflectionException
 	 */
 	public function __construct(Route $route) {
 		$this->route = $route;
 
 		$this->getRouteData();
 
-		$this->getSectionName();
-
 		$this->getRouteParamData();
 
-		$this->getApiSummary();
+		if (!$this->isClosure()) {
+			$this->getSectionName();
+
+			$this->getApiSummary();
+
+			$this->getApiParams();
+		}
 	}
 
 	private function getRouteData(): void {
@@ -44,39 +53,61 @@ class RouteData {
 		$this->uri = $uri;
 		$this->method = Str::lower($this->route->methods()[0]);
 		$this->controller = $controllerAndMethod[0];
-		$this->controllerMethod = $controllerAndMethod[1]??null;
-	}
+		$this->controllerMethod = $controllerAndMethod[1] ?? null;
 
-	private function getSectionName(): void {
 		if (!$this->isClosure()) {
-			$instance = app($this->controller);
-			$reflection = new ReflectionClass($instance);
-			$sectionAttribute = 'Arman\LaravelSwagger\Attribute\Section';
-
-			$attributes = $reflection->getAttributes($sectionAttribute);
-			if (!empty($attributes)) {
-				$this->tag = $attributes[0]->newInstance()->name;
-			}
+			$this->controllerInstance = app($this->controller);
 		}
 	}
 
+	/**
+	 * @throws ReflectionException
+	 */
+	private function getSectionName(): void {
+		$reflection = new ReflectionClass($this->controllerInstance);
+
+		$attributes = $reflection->getAttributes(Section::class);
+		if (!empty($attributes)) {
+			$this->tag = $attributes[0]->newInstance()->name;
+		}
+	}
+
+	/**
+	 * @throws ReflectionException
+	 */
 	private function getApiSummary(): void {
-		if (!$this->isClosure()) {
-			$instance = app($this->controller);
+		$reflection = new ReflectionMethod($this->controllerInstance, $this->controllerMethod);
+		$attributes = $reflection->getAttributes(ApiSummary::class);
 
-			$sectionAttribute = 'Arman\LaravelSwagger\Attribute\ApiSummary';
-			$reflection = new ReflectionMethod($instance, $this->controllerMethod);
+		if (!empty($attributes)) {
+			$this->summary = $attributes[0]->newInstance()->summary;
+		}
+	}
 
-			$attributes = $reflection->getAttributes($sectionAttribute);
+	/**
+	 * @throws ReflectionException
+	 */
+	private function getApiParams(): void {
+		$reflection = new ReflectionMethod($this->controllerInstance, $this->controllerMethod);
+		$attributes = $reflection->getAttributes(ApiParam::class);
 
-			if (!empty($attributes)) {
-				$this->summary = $attributes[0]->newInstance()->summary;
-			}
+
+		foreach ($attributes as $attribute) {
+			$attributeInstance = $attribute->newInstance();
+
+			$this->parameters[] = [
+				'name' => $attributeInstance->name,
+				'in' => 'query',
+				'required' => $attributeInstance->required,
+				'description' => $attributeInstance->description,
+				'schema' => [
+					'type' => $attributeInstance->type->value,
+				],
+			];
 		}
 	}
 
 	private function getRouteParamData(): void {
-		$this->parameters = [];
 		foreach ($this->route->parameterNames() as $parameterName) {
 			$isOptional = str_contains($this->uri, "{{$parameterName}?}");
 
@@ -84,7 +115,7 @@ class RouteData {
 				'name' => $parameterName,
 				'in' => 'path',
 				'required' => !$isOptional,
-				'description' => "The ID of the user",
+				'description' => '',
 				'schema' => [
 					'type' => 'string',
 				],
@@ -96,21 +127,22 @@ class RouteData {
 		return hash('md5', $method . ':' . $uri);
 	}
 
-	private function isClosure() {
+	private function isClosure(): bool {
 		return $this->controller === 'Closure';
 	}
 
-	public function getUri() {
+	public function getUri(): string {
 		return str_replace('?', '', $this->uri);
 	}
 
-	public function get() {
+	public function get(): array {
 		return [
 			$this->method => [
 				"operationId" => $this->generateOperationId($this->uri, $this->method),
 				"tags" => [$this->tag],
 				"parameters" => $this->parameters,
-				"summary" => $this->summary
+				"summary" => $this->summary,
+				"responses" => []
 			]
 		];
 	}
