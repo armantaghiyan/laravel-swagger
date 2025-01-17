@@ -32,6 +32,10 @@ class SwaggerExport {
 		$routes = Route::getRoutes();
 
 		foreach ($routes as $route) {
+			if (!in_array('Arman\LaravelSwagger\Http\Middleware\SwaggerRoute',$route->middleware())){
+				continue;
+			}
+
 			$routeData = new RouteData($route);
 			$uri = $routeData->getUri();
 			$newPath = $routeData->get();
