@@ -39,8 +39,6 @@ class RouteData {
 			$this->getSectionName();
 
 			$this->getApiSummary();
-
-			$this->getApiParams();
 		}
 	}
 
@@ -81,29 +79,6 @@ class RouteData {
 
 		if (!empty($attributes)) {
 			$this->summary = $attributes[0]->newInstance()->summary;
-		}
-	}
-
-	/**
-	 * @throws ReflectionException
-	 */
-	private function getApiParams(): void {
-		$reflection = new ReflectionMethod($this->controllerInstance, $this->controllerMethod);
-		$attributes = $reflection->getAttributes(ApiParam::class);
-
-
-		foreach ($attributes as $attribute) {
-			$attributeInstance = $attribute->newInstance();
-
-			$this->parameters[] = [
-				'name' => $attributeInstance->name,
-				'in' => 'query',
-				'required' => $attributeInstance->required,
-				'description' => $attributeInstance->description,
-				'schema' => [
-					'type' => $attributeInstance->type->value,
-				],
-			];
 		}
 	}
 

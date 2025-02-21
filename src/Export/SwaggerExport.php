@@ -28,11 +28,11 @@ class SwaggerExport {
 	/**
 	 * @throws \ReflectionException
 	 */
-	public function crawlRoutes() {
+	private function crawlRoutes() {
 		$routes = Route::getRoutes();
 
 		foreach ($routes as $route) {
-			if (!in_array('Arman\LaravelSwagger\Http\Middleware\SwaggerRoute',$route->middleware())){
+			if (!in_array('Arman\LaravelSwagger\Http\Middleware\SwaggerRoute', $route->middleware())) {
 				continue;
 			}
 

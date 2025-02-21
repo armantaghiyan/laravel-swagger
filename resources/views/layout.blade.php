@@ -5,7 +5,7 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Laravel swagger</title>
+    <title>{{config('swagger.title')}}</title>
     <link href="{{ asset('vendor/swagger/app.css') }}" rel="stylesheet">
 </head>
 <body>
